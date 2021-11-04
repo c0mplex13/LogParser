@@ -18,16 +18,16 @@ public class LogParser {
 
         List<String> result = new ArrayList<>();
         List<Keeper> keepers = new ArrayList<>();
-        BufferedReader br = null;
+        BufferedReader br;
 
 
-        //   if (args.length!=1)
-        //     throw new FileNotFoundException("Missing or incorrect number of source files!");
+           if (args.length!=1)
+             throw new FileNotFoundException("Missing or incorrect number of source files!");
 
         //todo close with resources
         try {
-            br = new BufferedReader(new FileReader("C:\\logfile.txt"));
-            //   br = new BufferedReader(new FileReader(args[0]));
+            //br = new BufferedReader(new FileReader("C:\\logfile.txt"));
+            br = new BufferedReader(new FileReader(args[0]));
 
             String line;
             while ((line = br.readLine()) != null) {
