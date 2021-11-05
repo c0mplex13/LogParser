@@ -66,12 +66,12 @@ public class LogParserApp {
 
             PreparedStatement statement = connection.prepareStatement(sql);
 
-            for (DBImportData finalLog : listForDBImport) {
-                statement.setString(1, finalLog.getId());
-                statement.setInt(2, finalLog.getDuration());
-                statement.setString(3, finalLog.getType());
-                statement.setString(4, finalLog.getHost());
-                statement.setString(5, Boolean.toString(finalLog.getAlert()));
+            for (DBImportData el : listForDBImport) {
+                statement.setString(1, el.getId());
+                statement.setInt(2, el.getDuration());
+                statement.setString(3, el.getType());
+                statement.setString(4, el.getHost());
+                statement.setString(5, Boolean.toString(el.getAlert()));
                 statement.addBatch();
             }
             statement.executeBatch();
@@ -88,8 +88,8 @@ public class LogParserApp {
     }
 
     // todo: find and discard unpaired entries
-    private static void logValidation(List<LogData> keepers) {
-        for (LogData k : keepers) {
+    public static void logValidation(List<LogData> logData) {
+        for (LogData k : logData) {
             if (k.getId().isEmpty() || k.getState().isEmpty() || k.getTimestamp() == 0) {
                 throw new RuntimeException("The logfile is corrupted.");
             }
