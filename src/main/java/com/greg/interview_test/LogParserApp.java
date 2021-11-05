@@ -9,7 +9,7 @@ import java.util.*;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
-public class LogParser {
+public class LogParserApp {
 
     static Connection connection;
     static String connectionString = "jdbc:hsqldb:file:logdatabase";
@@ -118,32 +118,31 @@ public class LogParser {
         }
     }
 
-    public static List<DBImportData> normalizeForDBImport(List<LogData> keepers) {
+    public static List<DBImportData> normalizeForDBImport(List<LogData> logData) {
 
-        List<DBImportData> normalizedLog = new ArrayList<>();
+        List<DBImportData> listForDBImport = new ArrayList<>();
 
-        for (int i = 0; i < keepers.size() - 1; i += 2) {
+        for (int i = 0; i < logData.size() - 1; i += 2) {
 
-            DBImportData finalLog = new DBImportData();
+            DBImportData parsedLog = new DBImportData();
 
-            finalLog.setId(keepers.get(i).getId());
-            finalLog.setDuration((int) (keepers.get(i + 1).getTimestamp() - keepers.get(i).getTimestamp()));
-            finalLog.setType(keepers.get(i).getType());
-            finalLog.setHost(keepers.get(i).getHost());
+            parsedLog.setId(logData.get(i).getId());
+            parsedLog.setDuration((int) (logData.get(i + 1).getTimestamp() - logData.get(i).getTimestamp()));
+            parsedLog.setType(logData.get(i).getType());
+            parsedLog.setHost(logData.get(i).getHost());
 
-            if ((finalLog.getDuration() > 4)) {
-                finalLog.setAlert(TRUE);
+            if ((parsedLog.getDuration() > 4)) {
+                parsedLog.setAlert(TRUE);
             } else {
-                finalLog.setAlert(FALSE);
+                parsedLog.setAlert(FALSE);
             }
 
-            normalizedLog.add(finalLog);
+            listForDBImport.add(parsedLog);
         }
-        return normalizedLog;
+        return listForDBImport;
     }
 
-    private static void sorting(List<LogData> keepers) {
-        Collections.sort(keepers, new SortComparator());
+    private static void sorting(List<LogData> logData) {
+        Collections.sort(logData, new SortComparator());
     }
 }
-
