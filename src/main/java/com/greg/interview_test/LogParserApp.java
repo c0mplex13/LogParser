@@ -52,7 +52,7 @@ public class LogParserApp {
         List<DBImportData> listForDBImport = normalizeForDBImport(listOfJsonObjects);
 
 
-        System.out.println(listOfJsonObjects);
+     //   System.out.println(listOfJsonObjects);
 
 
         try {
