@@ -53,7 +53,7 @@ public class DBImportData
 
     @Override
     public String toString() {
-        return "\nFinalLog{" +
+        return "\n{" +
                 "id='" + id + '\'' +
                 ", duration=" + duration +
                 ", type='" + type + '\'' +
