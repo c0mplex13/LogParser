@@ -51,10 +51,6 @@ public class LogParserApp {
 
         List<DBImportData> listForDBImport = normalizeForDBImport(listOfJsonObjects);
 
-
-     //   System.out.println(listOfJsonObjects);
-
-
         try {
             Class.forName("org.hsqldb.jdbc.JDBCDriver");
         } catch (ClassNotFoundException e) {
@@ -79,24 +75,6 @@ public class LogParserApp {
                 statement.addBatch();
             }
             statement.executeBatch();
-
-
-//            PreparedStatement pst = connection.prepareStatement("select * from logs");
-//            pst.clearParameters();
-//            ResultSet rs = pst.executeQuery();
-//
-//            while (rs.next()) {
-//                System.out.print(rs.getString(1));
-//                System.out.print(" | ");
-//                System.out.print(rs.getInt(2));
-//                System.out.print(" | ");
-//                System.out.print(rs.getString(3));
-//                System.out.print(" | ");
-//                System.out.print(rs.getString(4));
-//                System.out.print(" | ");
-//                System.out.println(rs.getString(5));
-//            }
-
 
         } catch (SQLException e) {
             e.printStackTrace();
