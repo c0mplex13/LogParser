@@ -11,44 +11,48 @@ import static java.lang.Boolean.TRUE;
 
 public class LogParser {
 
-    static Connection con;
+    static Connection connection;
     static String connectionString = "jdbc:hsqldb:file:logdatabase";
 
     public static void main(String[] args) throws FileNotFoundException {
 
-        List<String> result = new ArrayList<>();
-        List<Keeper> keepers = new ArrayList<>();
-        BufferedReader br;
+        if (args.length != 1)
+            throw new FileNotFoundException("Missing or incorrect number of source files!");
 
+        List<String> rawDataFromFile = new ArrayList<>();
+        BufferedReader br = null;
 
-           if (args.length!=1)
-             throw new FileNotFoundException("Missing or incorrect number of source files!");
-
-        //todo close with resources
         try {
-            //br = new BufferedReader(new FileReader("C:\\logfile.txt"));
             br = new BufferedReader(new FileReader(args[0]));
 
             String line;
             while ((line = br.readLine()) != null) {
-                result.add(line);
+                rawDataFromFile.add(line);
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                br.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
+        List<LogData> listOfJsonObjects = new ArrayList<>();
+
         Gson gson = new Gson();
-        for (int i = 0; i < result.size(); i++)
-            keepers.add(gson.fromJson(result.get(i), Keeper.class));
+        for (int i = 0; i < rawDataFromFile.size(); i++)
+            listOfJsonObjects.add(gson.fromJson(rawDataFromFile.get(i), LogData.class));
 
-        logValidation(keepers);
+        logValidation(listOfJsonObjects);
 
-        sorting(keepers);
+        sorting(listOfJsonObjects);
 
-        List<FinalLog> normalizedlog = listForDBImport(keepers);
+        List<DBImportData> listForDBImport = normalizeForDBImport(listOfJsonObjects);
 
 
-        System.out.println(keepers);
+        System.out.println(listOfJsonObjects);
 
 
         try {
@@ -58,72 +62,69 @@ public class LogParser {
         }
 
         try {
-            con = DriverManager.getConnection(connectionString, "SA", "");
+            connection = DriverManager.getConnection(connectionString, "SA", "");
 
-            con.createStatement().executeUpdate("CREATE TABLE if not EXISTS logs (ID varchar(50), duration int, type varchar(50), host varchar(50), alert varchar(20));");
+            connection.createStatement().executeUpdate("CREATE TABLE if not EXISTS logs (ID varchar(50), duration int, type varchar(50), host varchar(50), alert varchar(20));");
 
             final String sql = "INSERT INTO logs (ID, duration, type, host, alert) Values(?, ?, ? ,? ,?)";
 
-            PreparedStatement statement = con.prepareStatement(sql);
+            PreparedStatement statement = connection.prepareStatement(sql);
 
-            for (int i=0; i<normalizedlog.size(); i++)
-            {
-                statement.setString(1, normalizedlog.get(i).getId());
-                statement.setInt(2, normalizedlog.get(i).getDuration());
-                statement.setString(3, normalizedlog.get(i).getType());
-                statement.setString(4, normalizedlog.get(i).getHost());
-                statement.setString(5, Boolean.toString(normalizedlog.get(i).getAlert()));
+            for (DBImportData finalLog : listForDBImport) {
+                statement.setString(1, finalLog.getId());
+                statement.setInt(2, finalLog.getDuration());
+                statement.setString(3, finalLog.getType());
+                statement.setString(4, finalLog.getHost());
+                statement.setString(5, Boolean.toString(finalLog.getAlert()));
                 statement.addBatch();
             }
             statement.executeBatch();
 
 
-            PreparedStatement pst = con.prepareStatement("select * from logs");
-            pst.clearParameters();
-            ResultSet rs = pst.executeQuery();
-
-            List<FinalLog> contacts = new ArrayList<>();
-            while (rs.next()) {
-                System.out.print(rs.getString(1));
-                System.out.print(" | ");
-                System.out.print(rs.getInt(2));
-                System.out.print(" | ");
-                System.out.print(rs.getString(3));
-                System.out.print(" | ");
-                System.out.print(rs.getString(4));
-                System.out.print(" | ");
-                System.out.println(rs.getString(5));
-            }
+//            PreparedStatement pst = connection.prepareStatement("select * from logs");
+//            pst.clearParameters();
+//            ResultSet rs = pst.executeQuery();
+//
+//            while (rs.next()) {
+//                System.out.print(rs.getString(1));
+//                System.out.print(" | ");
+//                System.out.print(rs.getInt(2));
+//                System.out.print(" | ");
+//                System.out.print(rs.getString(3));
+//                System.out.print(" | ");
+//                System.out.print(rs.getString(4));
+//                System.out.print(" | ");
+//                System.out.println(rs.getString(5));
+//            }
 
 
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             try {
-                con.close();
+                connection.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private static void logValidation(List<Keeper> keepers) {
-
-        for (Keeper k : keepers) {
+    // todo: find and discard unpaired entries
+    private static void logValidation(List<LogData> keepers) {
+        for (LogData k : keepers) {
             if (k.getId().isEmpty() || k.getState().isEmpty() || k.getTimestamp() == 0) {
-                throw new RuntimeException("The logfile is corrupted");
+                throw new RuntimeException("The logfile is corrupted.");
             }
         }
     }
 
+    public static List<DBImportData> normalizeForDBImport(List<LogData> keepers) {
 
-    public static List<FinalLog> listForDBImport(List<Keeper> keepers) {
-
-        List<FinalLog> normalizedLog = new ArrayList<>();
+        List<DBImportData> normalizedLog = new ArrayList<>();
 
         for (int i = 0; i < keepers.size() - 1; i += 2) {
 
-            FinalLog finalLog = new FinalLog();
+            DBImportData finalLog = new DBImportData();
 
             finalLog.setId(keepers.get(i).getId());
             finalLog.setDuration((int) (keepers.get(i + 1).getTimestamp() - keepers.get(i).getTimestamp()));
@@ -138,11 +139,10 @@ public class LogParser {
 
             normalizedLog.add(finalLog);
         }
-    return normalizedLog;
+        return normalizedLog;
     }
 
-    //todo name change for this method
-    private static void sorting(List<Keeper> keepers) {
+    private static void sorting(List<LogData> keepers) {
         Collections.sort(keepers, new SortComparator());
     }
 }

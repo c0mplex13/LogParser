@@ -1,6 +1,6 @@
 package com.greg.interview_test;
 
-public class FinalLog
+public class DBImportData
 {
     private String id;
     private int duration;
@@ -8,7 +8,7 @@ public class FinalLog
     private String host;
     private boolean alert;
 
-    public FinalLog() {
+    public DBImportData() {
     }
 
     public String getId() {

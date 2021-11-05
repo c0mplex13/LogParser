@@ -2,14 +2,14 @@ package com.greg.interview_test;
 
 import java.util.Comparator;
 
-class SortComparator implements Comparator<Keeper> {
+class SortComparator implements Comparator<LogData> {
 
     @Override
-    public int compare(Keeper entry1, Keeper entry2) {
+    public int compare(LogData logEntry1, LogData logEntry2) {
 
-        int idCompare = entry1.getId().compareTo(entry2.getId());
+        int idCompare = logEntry1.getId().compareTo(logEntry2.getId());
 
-        int timeCompare = (int) (entry1.getTimestamp() - (entry2.getTimestamp()));
+        int timeCompare = (int) (logEntry1.getTimestamp() - (logEntry2.getTimestamp()));
 
         return (idCompare == 0) ? timeCompare : idCompare;
     }
