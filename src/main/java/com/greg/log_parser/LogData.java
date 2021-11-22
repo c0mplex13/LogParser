@@ -1,4 +1,4 @@
-package com.greg.interview_test;
+package com.greg.log_parser;
 
 public class LogData {
 

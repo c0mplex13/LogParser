@@ -1,4 +1,4 @@
-package com.greg.interview_test;
+package com.greg.log_parser;
 
 import com.google.gson.Gson;
 
@@ -33,7 +33,9 @@ public class LogParserApp {
             e.printStackTrace();
         } finally {
             try {
-                br.close();
+                if (br != null) {
+                    br.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -76,6 +78,10 @@ public class LogParserApp {
             }
             statement.executeBatch();
 
+
+            showDbContents();
+
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -84,6 +90,25 @@ public class LogParserApp {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private static void showDbContents() throws SQLException {
+
+        PreparedStatement pst = connection.prepareStatement("select * from logs");
+        pst.clearParameters();
+        ResultSet rs = pst.executeQuery();
+
+        while (rs.next()) {
+            System.out.print(rs.getString(1));
+            System.out.print(" | ");
+            System.out.print(rs.getInt(2));
+            System.out.print(" | ");
+            System.out.print(rs.getString(3));
+            System.out.print(" | ");
+            System.out.print(rs.getString(4));
+            System.out.print(" | ");
+            System.out.println(rs.getString(5));
         }
     }
 
